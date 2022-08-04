@@ -1,0 +1,133 @@
+--chương 2
+1. Chọn toàn bộ thông tin trong bảng SALGRADE
+select * from SALGRADE
+
+2. Chọn toàn bộ thông tin trong bảng EMP
+select * from EMP
+
+3. Hiển thị mọi loại nghề nghiệp
+select DISTINCT JOB from EMP
+
+4. Hiển thị tên nhân viên và thu nhập trong một năm (REMUNERATION)
+select DISTINCT ENAME, SAL*12 + NVL(COMM,0) as REMUNERATION   from EMP 
+
+5.Hiển thị theo nội dung dưới đây
+select DISTINCT ENAME || ' HAS HELP THE POSITION OF ' || JOB || ' IN DEPT ' || DEPTNO || ' SINCE ' || to_char(HIREDATE,'DD-MM-YYYY') FROM EMP
+
+6. Hiển thị cấu trúc bảng emp;
+
+Describe emp;
+
+7. Thay đổi nhãn và định dạng hiển thị của cột sal và hiredate trong bảng emp;
+COLUMN hiredate HEADING 'Date' FORMAT A15
+COLUMN sal JUSTIFY LEFT FORMAT $ 99,990.00 COLUMN
+hiredate FORMAT A9 NULL 'Not hired'
+
+
+--chương 3
+1.Chọn nhân viên trong bảng EMP có mức lương từ 1000 đến 2000 (chọn các trường
+ENAME, DEPTNO, SAL).
+select ename, deptno, sal from emp where sal between 1000 and 2000
+
+2. Hiển thị mã phòng ban, tên phòng ban, sắp xếp theo thứ tự tên phòng ban.
+
+select deptno, dname from dept order by dname 
+
+3. Hiển thị danh sách những nhân viên làm tại phòng 10 và 20 theo thứ tự A,B,C
+
+select empno, ename, job, mgr, hiredate, sal, comm, deptno from emp
+where deptno in(10,20)
+order by ename 
+
+4. Hiển thị tên và nghề nghiệp những nhân viên làm nghề thư ký (cleck) tại phòng 20.
+select * from emp
+select ename, job from emp
+where job like 'CLERK' and deptno in 20
+
+5. Hiển thị tất cả những nhân viên mà tên có các ký tự TH và LL
+select * from emp
+where ename like '%TH%'or ename like '%LL%'
+
+6. Hiển thị tên nhân viên, nghề nghiệp, lương của những nhân viên có giám đốc quản
+lý. 
+select ename, job, sal from emp where job != 'PRESIDENT';
+
+7. Hiển thị tên nhân viên, mã phòng ban, ngày gia nhập công ty sao cho gia nhập công ty trong năm 1983.
+select ename, deptno, hiredate from emp where to_char(HIREDATE,'YYYY') = 1983
+
+8. Hiển thị tên nhân viên, lương một năm (ANUAL_SAL ), thưởng sao cho lương lớn hơn thưởng và nghề nghiệp là SALEMAN, 
+--sắp theo thứ tự lương giảm dần và tên tăng dần
+
+select ename, sal * 12 + NVL(COMM,0) as ANUAL_SAL,comm from emp
+where sal > comm and job like 'SALEMAN'
+order by ANUAL_SAL desc , comm asc
+
+---chương 4
+---4.5.1. Hàm trên từng dòng dữ liệu
+1. Liệt kê tên nhân viên, mã phòng ban và lương nhân viên được tăng 15% (PCTSAL).
+select ename, deptno, FLOOR(((sal * 1.15) + NVL(COMM,0))) as PCTSAL from emp
+
+2. 
+select ename || '*****' || job ename_job from emp;
+
+3. 
+select UPPER(ename) || ' ' || INITCAP('(' || job || ')') EMPLOYEE from emp
+
+4.
+select upper(ename), deptno, INITCAP(job) from emp where deptno in 30
+
+5. Tìm ngày thứ 6 đầu tiên cách 2 tháng so với ngày hiện tại hiển thị ngày dưới dạng 09
+February 1990. // 
+
+select to_char(next_day(add_months(SYSDATE,2),'FRIDAY'),'dd month yyyy') "FIRST FRIDAY" from dual;
+
+6. Tìm thông itn về tên nhân viên, ngày gia nhập công ty của nhân viên phòng số 20,
+sao cho hiển thị như sau:
+
+select ename, upper(to_char( hiredate,'month,ddspth yyyy')) DATE_HIRED from emp where deptno =20
+
+7. Hiển thị tên nhân viên, ngày gia nhập công ty, ngày xét nâng lương (sau ngày gia
+nhập công ty 1 năm), sắp xếp theo thứ tự ngày xét nâng lương
+
+select ename, to_char(hiredate,'DD-MM-YYYY') HIREDATE,to_char(ADD_MONTHS(hiredate,12),'DD-MM-YYYY') as REVIEW from emp order by REVIEW 
+
+8. 
+select ename,(case 
+when sal<=1500 then 'BELOW 1500' 
+when sal>1500 then to_char(sal) 
+else 'On Target'
+end ) as salary 
+from emp order by ename;
+
+9. Cho biết thứ của ngày hiện tại
+SELECT to_char(CURRENT_DATE,'day' ) FROM DUAL;
+
+10.Đưa chuỗi dưới dạng nn/nn, kiểm tra nếu khúng khuôn dạng trả lời là YES, ngược lại
+là NO. Kiểm tra với các chuỗi 12/34, 01/1a, 99\88
+select decode('nn/nn','14/24','YES','01/1a','NO','99\98','NO','udefine') as VALUEVALID from dual;
+
+11. Hiển thị tên nhân viên, ngày gia nhập công ty, ngày lĩnh lương sao cho ngày lĩnh
+lương phải vào thứ 6, nhân viên chỉ được nhận lương sau ít nhất 15 ngày làm việc tại
+công ty, sắp xếp theo thứ tự ngày gia nhập công ty.
+
+select ename, hiredate,next_day(hiredate+15,'FRIDAY') as salarydate from emp
+where ((sysdate-hiredate) > 15)
+
+---4.5.2. Hàm trên nhóm dữ liệu
+1. Tìm lương thấp nhất, lớn nhất và lương trung bình của tất cả các nhân viên
+select min(sal), max(sal),avg(sal) from emp
+
+2. Tìm lương nhỏ nhất và lớn của mỗi loại nghề nghiệp
+select min(sal), max(sal), job from emp group by job
+
+3. Tìm xem có bao nhiêu giám đốc trong danh sách nhân viên.
+select count(job) from emp where job like 'MANAGER'
+
+4. Tìm tất cả các phòng ban mà số nhân viên trong phòng >3
+select deptno,count(*)as sumemployee from emp group by deptno
+having count(*)>3;
+
+5. Tìm ra mức lương nhỏ nhất của mỗi nhân viên làm việc cho một giám đốc nào đó
+sắp xếp theo thứ tự tăng dần của mức lương.
+
+select job,min(sal) as sal from emp where job!='MANAGER' group by job order by sal asc ;
