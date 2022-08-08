@@ -1,0 +1,93 @@
+----chương 7
+--1.Tạo bảng PROJECT với các column được chỉ ra dưới đây, PROJID là promary key, và
+--P_END_DATE > P_START_DATE.
+--Column name Data Type Size.
+--PROJID NUMBER 4
+--P_DESC VARCHAR2 20
+--P_START_DATE DATE
+--P_END_DATE DATE
+--BUDGET_AMOUNT NUMBER 7,2
+--MAX_NO_STAFF NUMBER 2
+create table PROJECT_HANH
+(
+PROJID number(4,0) not null constraint PK_PROJECT_HANH PRIMARY KEY,
+P_DESC varchar2(20),
+P_START_DATE date,
+P_END_DATE date,
+BUDGET_AMOUNT number(7,2),
+MAX_NO_STAFF number(2,0),
+check(P_END_DATE > P_START_DATE)
+);
+
+
+2.--Tạo bảng ASSIGNMENTS với các column được chỉ ra dưới đây, đồng thời cột
+--PROJID là foreign key tới bảng PROJECT, cột EMPNO là foreign key tới bảng EMP.
+--Column name Data Type Size.
+--PROJID NUMBER 4 NOT NULL
+--EMPNO NUMBER 4 NOT NULL
+--A_START_DATE DATE
+--A_END_DATE DATE
+--BILL_AMOUNT NUMBER 4,2
+--ASSIGN_TYPE VARCHAR2 2
+
+create table ASSIGNMENTS022
+(
+PROJID number(4) not null constraint FK_ASSIGNMENTS022_PROJECT_HANH references PROJECT_HANH(PROJID),
+EMPNO number(4) not null constraint FK_ASSIGNMENTS022_EMP references EMP(EMPNO),
+A_START_DATE date,
+A_END_DATE date,
+BILL_AMOUNT number(4,2),
+ASSIGN_TYPE varchar(2)
+)
+3. Thêm column COMMENTS kiểu LONG vào bảng PROJECTS. Thêm column HOURS kiểu
+NUMBER vào bảng ASSIGNMENTS.
+select * from PROJECT_HANH
+ALTER TABLE PROJECT_HANH add (COMMENTS long);
+ALTER TABLE ASSIGNMENTS022 add (HOURS number);
+
+4. Sử dụng view USER_OBJECTS hiển thị tất cả các đối tượng user sở hữu.
+DESCRIBE USER_OBJECTS;
+
+5. Thêm ràng buộc duy nhất (UNIQUE) cho 2 column PROJECT_ID và EMPNO của bảng
+ASSIGNMENTS.
+ alter table ASSIGNMENTS022 modify(PROJID unique);
+ alter table ASSIGNMENTS022 modify(empno unique);
+ 
+ 6. Xem các thông tin về các ràng buộc trong USER_CONSTRAINTS
+ select * from User_Constraints;
+ 
+ 7. Xem trong USER hiện tại có tất cả bao nhiêu bảng.
+select count(TABLE_NAME) from USER_TABLES;
+
+---chương 8
+1. Thêm dữ liệu vào bảng PROJECTS
+select * from PROJECT_HANH
+insert into PROJECT_HANH values(1,'WRITE C030 COURSE',to_date('02-JAN-88','DD-MON-RR'),to_date('07-JAN-88','DD-MON-RR'),500,1,22)
+insert into PROJECT_HANH values(2,'PROOF READ NOTES',to_date('01-JAN-89','DD-MON-RR'),to_date('10-JAN-89','DD-MON-RR'),600,1,11)
+
+2. Thêm dữ liệu vào bảng ASSIGNMENTS.
+select * from ASSIGNMENTS022
+select * from emp
+insert into ASSIGNMENTS022 values(1,7369,to_date('01-JAN-88','DD-MON-RR'),to_date('03-JAN-88','DD-MON-RR'),50.00,'WR',15)
+insert into ASSIGNMENTS022 values(1,7902,to_date('04-JAN-88','DD-MON-RR'),to_date('07-JAN-88','DD-MON-RR'),55.00,'WR',20)
+insert into ASSIGNMENTS022 values(2,7844,to_date('01-JAN-89','DD-MON-RR'),to_date('10-JAN-89','DD-MON-RR'),45.50,'PF',30)
+
+3. Cập nhật trường ASIGNMENT_TYPE từ WT thành WR.
+update ASSIGNMENTS022
+set assign_type = 'WR'
+where assign_type = 'WT'
+
+4. Nhập thêm số liệu vào bảng ASSIGNMENTS.
+insert into ASSIGNMENTS022 values(2,7003,to_date('06-JAN-88','DD-MON-RR'),to_date('08-JAN-88','DD-MON-RR'),55.00,'WR',20)
+
+----chương 9
+1. Tạo Index trên cột PROJID cho bảng ASSIGNMENT.
+create index projid_index
+on ASSIGNMENTS(PROJID);
+
+2.Hiển thị danh sách của nhân viên thuộc sự quản lý của người có tên là 1 biến được
+nhập từ bàn phím
+
+select e.empno,e.ename,e.job,m.mgr,e.hiredate,e.sal,e.comm,e.deptno
+from emp e join emp m on e.mgr=m.empno
+where m.mgr =(select mgr from emp where ename='&ename');
