@@ -1,0 +1,198 @@
+1.	Viết script tạo cấu trúc các bảng. Đối với bảng Mượn Sách cần đánh partition trên trường ngày giờ mượn, và 2 local index: 1 index 
+trên trường id bạn đọc, 1 index trên id sách. Tên indexes theo cấu trúc : TENBANG_IDX_TENTRUONG
+--nhà xuất bản
+create table hth_hanh_nxb
+(
+ID number(4) not null constraint pk_hth_hanh_nxb primary key,
+Ma number(4),
+Ten varchar2(30),
+TrangThai varchar2(20),
+DiaChi varchar(30),
+MoTa varchar(30),
+CONSTRAINT UC_Ma UNIQUE(Ma) 
+);
+
+---Tác giả
+create table hth_hanh_tgia
+(
+ID number(4) not null constraint pk_hth_hanh_tgia primary key,
+Ma number(4),
+Ten varchar2(30),
+SoDienThoai char(15),
+DiaChi varchar(30),
+MoTa varchar(30),
+CONSTRAINT UTacGia_Ma UNIQUE(Ma) 
+);
+
+---Sách 
+
+create table hth_hanh_sach
+(
+ID number(4) not null constraint pk_hth_hanh_sach primary key,
+Ma number(4),
+Ten varchar2(30),
+IDnxb number(4) not null constraint fk_hth_hanh_sach_hth_hanh_nxb references hth_hanh_nxb(ID),
+IDTacGia number(4) not null constraint fk_hth_hanh_sach_hth_hanh_tgia references hth_hanh_tgia(ID),
+ChuDe varchar2(40),
+NamXuatBan date,
+MoTa varchar2(40),
+SoLuongConLai number(4),
+SoLuongDangMuon number(4),
+TongSoSach number(5),
+constraint UNSach_Ma UNIQUE(Ma)
+);
+
+---Bạn đọc
+create table hth_hanh_bandoc
+(
+ID number(4) not null constraint pk_hth_hanh_bandoc primary key,
+Ma number(4),
+Ten varchar2(30),
+SoDienThoai char(15),
+DiaChi varchar(30),
+NgaySinh date,
+NgayTaoTK date,
+Hang varchar2(20),
+CONSTRAINT UBanDoc_Ma UNIQUE(Ma) 
+);
+
+---Mượn sách
+create table hanh_MSach
+(
+ID number(4) not null constraint pk_hanh_MSach primary key,
+IDBanDoc number(4) not null constraint fk_hanh_MSach_hth_hanh_bandoc references hth_hanh_bandoc(ID),
+IDSach number(4) not null constraint fk_hanh_MSach_hth_hanh_sach references hth_hanh_sach(ID),
+SoLuong number(5),
+NgayMuon date,
+NgayTra date,
+TrangThai varchar2(30),
+GhiChu varchar2(30)
+)
+ partition by range(NgayMuon)
+(
+partition th1_2 values less than(to_date('28/02/2022','dd-mm-yyyy')),
+partition th3_4 values less than(to_date('30/04/2022','dd-mm-yyyy')),
+partition th5_6 values less than(to_date('30/06/2022','dd-mm-yyyy')),
+partition th7_8 values less than(to_date('30/08/2022','dd-mm-yyyy')),
+partition th9_10 values less than(to_date('30/09/2022','dd-mm-yyyy')),
+partition th11_12 values less than(to_date('30/10/2022','dd-mm-yyyy'))
+)
+ create index hanhhth_MSach_idx_IDBanDoc on hth_hanh_bandoc(ID);
+ create index MSach_idx_IDSach on hth_hanh_sach(ID);
+ 
+--câu 2.Viết script tạo sequence cho mỗi bảng. Sequence được dùng để insert trường Id cho các bảng. Tên sequence theo cấu trúc : TENBANG_SEQ
+--nhà xuất bản
+CREATE SEQUENCE hth_hanh_nxb_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 200
+MINVALUE 1
+
+--Tác giả
+CREATE SEQUENCE hth_hanh_tgia_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 200
+MINVALUE 1
+
+--Sách
+CREATE SEQUENCE hth_hanh_sach_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 200
+MINVALUE 1
+
+---Bạn đọc
+CREATE SEQUENCE hth_hanh_bandoc_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 200
+MINVALUE 1
+
+---Mượn sách
+CREATE SEQUENCE hanh_MSach_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 200
+MINVALUE 1
+
+--câu 3.	Viết script tạo unique index cho các bảng nếu có.
+
+
+
+--câu 4.Viết script insert dữ liệu mẫu cho tất cả các bảng.
+---Nhà xuất bản
+select * from hanh_MSach
+insert into hth_hanh_nxb values(1,1,'Kim Đồng','ACTIVE','Hà Nội','NXB Kim Đồng')
+
+----Tác giả
+insert into hth_hanh_tgia values(1,1,'Nhã Nam','0447846223','Hà Nội','NXB Kim Đồng')
+ 
+---Sách
+insert into hth_hanh_sach values(1,1,'Conan',1,1,'Trinh Thám',to_date('01-JAN-88','DD-MON-RR'),'Xuất xứ nhật bản',3,1,4)
+
+---Bạn đọc
+insert into hth_hanh_bandoc values(1,1,'Hanh','0337598245','Phú Thọ',to_date('01-JAN-02','DD-MON-RR'),to_date('01-JAN-21','DD-MON-RR'),'Vàng')
+
+---Mượn sách
+insert into hanh_MSach values(1,1,1,1,to_date('9-JAN-21','DD-MON-RR'),to_date('11-JAN-21','DD-MON-RR'),'Đã Trả','Không có')
+insert into hanh_MSach values(2,1,1,1,to_date('9-JAN-22','DD-MON-RR'),to_date('11-JAN-22','DD-MON-RR'),'Đã Trả','Không có')
+
+--câu 5.	Hiển thị dách sách tác giả và tổng số lượng sách của tác giả gồm các trường thông tin:
+--Mã Tác Giả, Tên Tác Giả, Chủ Đề, Số Lượng Sách
+--Sắp xếp theo số lượng sách giảm dần.
+
+select tg.id, tg.ten, s.chude, s.tongsosach from hth_hanh_sach s 
+join hth_hanh_tgia tg on s.IDTacGia = tg.id
+group by tg.id, tg.ten, s.chude, s.tongsosach
+order by s.tongsosach desc
+
+select * from hth_hanh_sach
+--câu 6.	Hiển thị 10 quyển sách có số lượng được mượn nhiều nhất gồm các trường thông tin:
+----Mã Sách, Tên Sách, Tên Nhà Xuất Bản, Tên Tác Giả, Chủ Đề, Năm Xuất Bản, Số Lượng Còn Lại, Số Lượng Đã Mượn, Tổng Số
+select s.id, s.ten, nxb.ten, tg.ten, chude, namxuatban, soluongconlai, soluongdangmuon, tongsosach from hth_hanh_sach s 
+join hth_hanh_tgia tg on s.IDTacGia = tg.id
+join hth_hanh_nxb nxb on s.IDnxb = tg.id
+group by soluongdangmuon
+where count(s.id)<11;
+
+
+
+--câu 7.	Hiển thị  thông tin bạn đọc và sách được mượn từ ngày đầu tháng hiện tại đến thời điểm hiện tại.
+--Mã Bạn Đọc, Tên Bạn Đọc, Mã Sách, Tên Sách, Ngày Giờ Mượn, Số lượng
+--Sắp xếp theo ngày giờ mượn giảm dần, Tên bạn đọc tăng dần.
+
+select b.id, b.ten, s.id, s.ten, to_char(ms.ngaymuon,'dd-MM-yyyy') ngaymuon, ms.soluong from hth_hanh_bandoc b
+join hanh_MSach ms on b.ID = ms.IDBanDoc
+join hth_hanh_sach s on s.ID = ms.IDSach
+where ms.ngaymuon between TRUNC(sysdate, 'MONTH') and sysdate
+
+---câu 8.	Hiển thị 10 quyển sách có số lượng được mượn nhiều nhất tính từ đầu năm 2022
+--Mã Sách, Tên Sách, Số Lượng Đã Được Mượn.
+
+select  s.id,s.ten, soluongdangmuon from hth_hanh_sach s
+join hanh_MSach m on(m.IDSach=s.id) 
+ where m.ngaymuon> to_date('01/01/2022','dd-mm-yyyy') 
+ group by  s.id, s.ten,s.soluongdangmuon 
+ order by sum(soluongdangmuon)
+
+
+
+---câu 9.	Hiển thị danh sách bạn đọc và số lần mượn sách tính từ đầu năm 2022 sắp xếp theo tên bạn đọc tăng dần:
+---Mã Bạn Đọc, Tên Bạn Đọc, Số Lần Mượn
+
+select bd.id, bd.ten, count(ms.id) solanmuon from hth_hanh_bandoc bd
+join hanh_MSach ms on bd.id = ms.IDBanDoc
+where ms.ngaymuon> to_date('01/01/2022','dd-mm-yyyy') 
+group by bd.id, bd.ten,ngaymuon
+order by bd.ten
+
+
+
+
+
+
+
+
+
+
