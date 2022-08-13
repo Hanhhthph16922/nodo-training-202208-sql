@@ -1,0 +1,33 @@
+--cau 10.	Hiển thị thông tin bạn đọc gồm có:
+---Mã Bạn Đọc, Tên Bạn Đọc, Tuổi (được tính dựa vào trường ngày sinh)
+select id, ten, floor(months_between(sysdate, ngaysinh) /12) as Tuoi from hth_hanh_bandoc
+
+----cau 11.	Thống kê tổng số bạn đọc theo độ tuổi
+---Tuổi, Tổng số Bạn Đọc
+select floor(months_between(sysdate, ngaysinh) /12) as Tuoi, sum(id) from hth_hanh_bandoc
+group by floor(months_between(sysdate, ngaysinh) /12)
+
+---cau 12.	Thống kê số lượng sách được xuất bản theo Nhà Xuất Bản, Theo năm xuất bản.
+--Năm Xuất Bản, Mã Nhà Xuất Bản,Tên Nhà Xuất Bản, Số Lượng Sách
+---Sắp xếp theo Năm xuất bản giảm dần, Tên Nhà xuất bản tăng dần.
+
+select to_char(s.namxuatban,'yyyy') namxuatban, nxb.id, sum(s.id) slsach from hth_hanh_nxb nxb, hth_hanh_sach s
+where nxb.id = s.IDnxb
+group by s.namxuatban, nxb.ten, nxb.id, s.id
+order by s.namxuatban desc, nxb.ten asc
+
+---cau 13.	Hiển thị 5 quyển sách được các bạn đọc có độ tuổi từ 18 đến 25 mượn nhiều nhất tính từ đầu năm 2022. 
+---(Tính theo trường số lượng mượn của sách)
+---Mã Sách, Tên Sách, Số Lượng Được Mượn
+select * from hth_hanh_sach
+select id, soluongdangmuon,floor(months_between(sysdate,ngaysinh) /12) as Tuoi from (
+    select *From hth_hanh_sach s join hanh_MSach ms on s.id = ms.IDSach
+   join hth_hanh_bandoc bd on bd.id = ms.IDBanDoc 
+    order by soluongdangmuon
+) where rownum <6 and floor(months_between(sysdate,ngaysinh) /12) between 18 and 25 and ngaymuon> to_date('01/01/2022','dd-mm-yyyy') 
+
+--cau 14.	Hiển thị toàn bộ bạn đọc và sách mà bạn đọc đấy mượn, sẽ có bạn chưa mượn vẫn cần hiển thị và tên sách để là null.
+---Mã bạn đọc, tên ban đọc, tên sách
+select bd.id, bd.ten, NVL(s.ten,null) from hth_hanh_sach s join hanh_MSach ms on s.id = ms.IDSach
+   join hth_hanh_bandoc bd on bd.id = ms.IDBanDoc 
+   
